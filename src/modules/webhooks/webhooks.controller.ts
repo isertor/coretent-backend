@@ -4,7 +4,7 @@ import { processIncomingEmail } from './webhooks.service';
 import { logger } from '../../config/logger';
 
 /**
- * Handle incoming email webhook from Mailgun
+ * Handle incoming email webhook from SendGrid or Mailgun
  */
 export async function handleIncomingEmail(
   req: Request,
@@ -12,11 +12,12 @@ export async function handleIncomingEmail(
   next: NextFunction
 ): Promise<void> {
   try {
-    logger.info({ headers: req.headers }, 'Received Mailgun webhook');
+    const provider = req.body.to ? 'SendGrid' : 'Mailgun';
+    logger.info({ provider, headers: req.headers }, 'Received email webhook');
 
     await processIncomingEmail(req.body);
 
-    // Respond quickly (Mailgun requires <5s response)
+    // Respond quickly (webhook requires <5s response)
     res.status(200).json({ success: true });
   } catch (error) {
     logger.error({ error }, 'Webhook processing error');

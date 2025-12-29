@@ -7,9 +7,25 @@ import { asyncHandler } from '../../middleware/error-handler';
 
 const router = Router();
 
-// Mailgun webhook endpoint - signature verified, no rate limit
+// SendGrid Inbound Parse webhook endpoint
+router.post(
+  '/sendgrid',
+  webhookLimiter,
+  verifyWebhookMiddleware,
+  asyncHandler(handleIncomingEmail)
+);
+
+// Mailgun webhook endpoint (legacy support)
 router.post(
   '/mailgun',
+  webhookLimiter,
+  verifyWebhookMiddleware,
+  asyncHandler(handleIncomingEmail)
+);
+
+// Generic email webhook (works with both)
+router.post(
+  '/email',
   webhookLimiter,
   verifyWebhookMiddleware,
   asyncHandler(handleIncomingEmail)

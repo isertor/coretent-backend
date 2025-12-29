@@ -7,15 +7,14 @@ import { logger } from '../../config/logger';
 import { NotFoundError, EmailParsingError } from '../../utils/errors';
 
 export async function processIncomingEmail(webhookData: any): Promise<void> {
-  const {
-    recipient,
-    sender,
-    from,
-    subject,
-    'body-html': bodyHtml,
-    'body-plain': bodyPlain,
-    'message-id': messageId
-  } = webhookData;
+  // Support both SendGrid and Mailgun formats
+  const recipient = webhookData.to || webhookData.recipient;
+  const sender = webhookData.from || webhookData.sender;
+  const from = webhookData.from || webhookData.sender;
+  const subject = webhookData.subject;
+  const bodyHtml = webhookData.html || webhookData['body-html'];
+  const bodyPlain = webhookData.text || webhookData['body-plain'];
+  const messageId = webhookData.headers?.['message-id'] || webhookData['message-id'] || `sendgrid-${Date.now()}`;
 
   logger.info({ recipient, sender, subject, messageId }, 'Processing incoming email');
 
@@ -38,7 +37,9 @@ export async function processIncomingEmail(webhookData: any): Promise<void> {
 
   const { html, text, hasHTML } = extractEmailContent({
     'body-html': bodyHtml,
-    'body-plain': bodyPlain
+    'body-plain': bodyPlain,
+    html: bodyHtml,
+    text: bodyPlain
   });
 
   if (!hasHTML && !text) {
