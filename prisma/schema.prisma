@@ -1,0 +1,103 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  userId        String         @unique // iOS app UUID
+  emailAlias    String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  newsletters   Newsletter[]
+  subscriptions Subscription[]
+
+  @@index([emailAlias])
+  @@map("users")
+}
+
+model Newsletter {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  // Email metadata
+  messageId     String   @unique
+  fromEmail     String
+  fromName      String?
+  subject       String
+  receivedAt    DateTime @default(now())
+
+  // Content
+  htmlContent   String   @db.Text
+  cleanContent  String   @db.Text
+  textContent   String?  @db.Text
+
+  // Parsed metadata
+  title         String?
+  author        String?
+  publication   String?
+  estimatedReadTime Int?
+  excerpt       String?  @db.Text
+
+  // Processing
+  parsedAt      DateTime?
+  parseStatus   String   @default("pending") // pending, success, failed
+  parseError    String?
+
+  // Tracking
+  isRead        Boolean  @default(false)
+  isArchived    Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, receivedAt])
+  @@index([parseStatus])
+  @@map("newsletters")
+}
+
+model Subscription {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  newsletterName  String
+  senderEmail     String
+  senderDomain    String
+
+  subscribedAt    DateTime @default(now())
+  lastReceivedAt  DateTime?
+  emailCount      Int      @default(0)
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, senderEmail])
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+model WebhookEvent {
+  id            String   @id @default(uuid())
+  eventType     String   // delivered, failed, bounced, complained
+  messageId     String
+  recipient     String
+  sender        String?
+  timestamp     DateTime
+  payload       Json
+  processed     Boolean  @default(false)
+  processedAt   DateTime?
+
+  createdAt     DateTime @default(now())
+
+  @@index([messageId])
+  @@index([processed])
+  @@map("webhook_events")
+}
