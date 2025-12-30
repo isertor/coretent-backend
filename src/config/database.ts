@@ -20,18 +20,18 @@ export const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
 // Log database queries in development
 if (process.env.NODE_ENV === 'development') {
-  prisma.$on('query', (e) => {
+  prisma.$on('query', (e: any) => {
     logger.debug({ query: e.query, params: e.params, duration: e.duration }, 'Database query');
   });
 }
 
 // Log database errors
-prisma.$on('error', (e) => {
+prisma.$on('error', (e: any) => {
   logger.error({ target: e.target, message: e.message }, 'Database error');
 });
 
 // Log database warnings
-prisma.$on('warn', (e) => {
+prisma.$on('warn', (e: any) => {
   logger.warn({ target: e.target, message: e.message }, 'Database warning');
 });
 
