@@ -33,5 +33,5 @@ COPY --from=builder /app/prisma ./prisma
 # Expose port
 EXPOSE 3000
 
-# Run migrations and start server
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
+# Push schema to database and start server
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/server.js"]
