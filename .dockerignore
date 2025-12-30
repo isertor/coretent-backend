@@ -1,0 +1,44 @@
+# Environment files (Railway provides these)
+.env
+.env.local
+.env.*.local
+
+# Dependencies (installed in Docker)
+node_modules
+npm-debug.log
+
+# Build output (created in Docker)
+dist
+build
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage
+*.test.ts
+*.spec.ts
+tests
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github
+
+# Misc
+tmp
+temp
+logs
