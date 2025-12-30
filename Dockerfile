@@ -8,7 +8,6 @@ RUN apt-get update -y && apt-get install -y openssl
 
 # Copy package files
 COPY package*.json ./
-COPY prisma ./prisma/
 
 # Install dependencies
 RUN npm ci
@@ -16,10 +15,7 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build TypeScript
+# Build TypeScript (don't generate Prisma yet - will do at runtime)
 RUN npm run build
 
 # Production stage
@@ -39,5 +35,5 @@ COPY --from=builder /app/prisma ./prisma
 # Expose port
 EXPOSE 3000
 
-# Push schema to database and start server
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/server.js"]
+# Generate Prisma client, push schema, and start server (all at runtime with Railway env vars)
+CMD ["sh", "-c", "npx prisma generate && npx prisma db push --accept-data-loss && node dist/server.js"]
